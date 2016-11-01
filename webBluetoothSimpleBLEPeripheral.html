@@ -1,0 +1,104 @@
+<html>
+
+<head>
+  <title>webBluetooth with SimpleBLEPeripheral</title>
+</head>
+
+<body>
+  <p>Code is generated from https://beaufortfrancois.github.io/sandbox/web-bluetooth/generator/</p>
+
+  <button type="button" id="buttonConnect">Connect</button>
+
+  <p></p>
+
+  <script>
+    class SimpleBLEPeripheral {
+
+      constructor() {
+        this.device = null;
+        this.onDisconnected = this.onDisconnected.bind(this);
+      }
+
+      request() {
+        let options = {
+          "filters": [{
+            "namePrefix": "Simple",
+            "services": [0xFFF0]
+          }]
+        };
+        return navigator.bluetooth.requestDevice(options)
+          .then(device => {
+            this.device = device;
+            this.device.addEventListener('gattserverdisconnected', this.onDisconnected);
+            return device;
+          });
+      }
+
+      connect() {
+        if (!this.device) {
+          return Promise.reject('Device is not connected.');
+        } else {
+          return this.device.gatt.connect();
+        }
+      }
+
+      readCharacteristicOne() {
+        return this.device.gatt.getPrimaryService(0xFFF0)
+          .then(service => service.getCharacteristic(0xFFF1))
+          .then(characteristic => characteristic.readValue());
+      }
+
+      writeCharacteristicOne(data) {
+        return this.device.gatt.getPrimaryService(0xFFF0)
+          .then(service => service.getCharacteristic(0xFFF1))
+          .then(characteristic => characteristic.writeValue(data));
+      }
+
+      disconnect() {
+        if (!this.device) {
+          return Promise.reject('Device is not connected.');
+        } else {
+          return this.device.gatt.disconnect();
+        }
+      }
+
+      onDisconnected() {
+        appendHtml(document.body, 'Device is disconnected.');
+      }
+    }
+
+    var simpleBLEPeripheral = new SimpleBLEPeripheral();
+
+    function appendHtml(el, str) {
+      var div = document.createElement('div');
+      div.innerHTML = str;
+      el.appendChild(div);
+    }
+
+    document.getElementById('buttonConnect').addEventListener('click', function() {
+      simpleBLEPeripheral.request()
+        .then(_ => simpleBLEPeripheral.connect())
+        .then(_ => {
+          /* Do something with simpleBLEPeripheral */
+          appendHtml(document.body, 'Device is connected.');
+          return simpleBLEPeripheral.readCharacteristicOne();
+        })
+        .then(value => {
+          appendHtml(document.body, "Read value " + value.getUint8() + " from Characteristic 1\n");
+          appendHtml(document.body, "Add 1 to that value and write back\n");
+          return simpleBLEPeripheral.writeCharacteristicOne(new Uint8Array([value.getUint8() + 1]));
+        })
+        .then(_ => {
+          return simpleBLEPeripheral.readCharacteristicOne()
+        })
+        .then(value => {
+          appendHtml(document.body, "Read value " + value.getUint8() + " from Characteristic 1\n");
+        }).catch(error => {
+          console.log(error)
+        });
+    });
+  </script>
+
+</body>
+
+</html>
