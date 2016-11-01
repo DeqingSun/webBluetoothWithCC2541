@@ -62,7 +62,7 @@ To use WebBluetooth API, you need either enable WebBluetooth flag in <chrome://f
 
 ![](https://raw.githubusercontent.com/DeqingSun/webBluetoothWithCC2541/master/images/flags.png)
 
-Or you can use Origin Trials on your webpage. I'm still waiting for my token.
+Or you can use Origin Trials on your webpage. You can apply for one on <http://bit.ly/WebBluetoothOriginTrial>. Once you get an email with the token you can add \<meta\> tag into your page's \<head\>. Then you will be able to connect to WebBluetooth in that page on any compatible device.
 
 Finally you can host your page on localhost or a https server. You can also try mine on 
 
